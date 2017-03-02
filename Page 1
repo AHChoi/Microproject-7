@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString();
+    document.cookie = cname+"="+cvalue+"; "+expires;
+}
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+function checkCookie() {
+    var user=getCookie("username");
+    if (user != "") {
+        alert("Welcome again " + user);
+    } else {
+       user = prompt("Please enter your name:","");
+       if (user != "" && user != null) {
+           setCookie("username", user, 30);
+       }
+    }
+}
+</script>
+</head>
+<body onload="checkCookie()">
+    <h1>Overwatch Support Heroes Information</h1>
+
+    <p>Click a button to display a description of the hero.</p>
+
+    <button type="button" onclick="ana()">Ana</button>
+    <button type="button" onclick="lucio()">Lucio</button>
+    <button type="button" onclick="mercy()">Mercy</button>
+    <button type="button" onclick="symmetra()">Symmetra</button>
+    <button type="button" onclick="zenyatta()">Zenyatta</button>
+    
+    <p id="result"></p>
+
+        <script>
+        //JSON text
+        var anaText = '{"ana":[' +
+            '{"name":"Name: Ana"},' + '{"weapon":"Weapon: Biotic Rifle" },' +
+            '{"skill1":"Skill 1: Sleep Dart"},' + '{"skill2":"Skill 2: Biotic Grenade" },' +
+            '{"ultimate":"Ultimate: Nano Boost"}]}';
+            
+        var lucioText = '{"lucio":[' +
+            '{"name":"Name: Lucio"},' + '{"weapon":"Weapon: Sonic Amplifier" },' +
+            '{"skill1":"Skill 1: Crossfade"},' + '{"skill2":"Skill 2: Amp It Up" },' +
+            '{"ultimate":"Ultimate: Sound Barrier"}]}';
+
+        var mercyText = '{"mercy":[' +
+            '{"name":"Name: Mercy"},' + '{"weapon":"Weapon: Caduceus Staff/Blaster" },' +
+            '{"skill1":"Skill 1: Angelic Descent"},' + '{"skill2":"Skill 2: Guardian Angel" },' +
+            '{"ultimate":"Ultimate: Resurrect"}]}';
+
+        var symText = '{"symmetra":[' +
+            '{"name":"Name: Symmetra"},' + '{"weapon":"Weapon: Photon Projector" },' +
+            '{"skill1":"Skill 1: Photon Barrier"},' + '{"skill2":"Skill 2: Sentry Turret" },' +
+            '{"ultimate":"Ultimate: Teleport/Shield Generator"}]}';
+
+        var zenText = '{"zenyatta":[' +
+            '{"name":"Name: Zenyatta"},' + '{"weapon":"Weapon: Orb of Destruction" },' +
+            '{"skill1":"Skill 1: Orb of Harmony"},' + '{"skill2":"Skill 2: Orb of Discord" },' +
+            '{"ultimate":"Ultimate: Transcendence"}]}'; 
+
+        //JSON parsing into variables
+        var anaObj = JSON.parse(anaText);
+        var lucioObj = JSON.parse(lucioText);
+        var mercyObj = JSON.parse(mercyText);
+        var symObj = JSON.parse(symText);
+        var zenObj = JSON.parse(zenText);
+
+        //call variables from the array
+        function ana() 
+        {
+            document.getElementById("result").innerHTML = anaObj.ana[0].name + "<br>" + anaObj.ana[1].weapon + "<br>"
+                                                        + anaObj.ana[2].skill1 + "<br>" + anaObj.ana[3].skill2 + "<br>" 
+                                                        + anaObj.ana[4].ultimate + "<br>";
+        }
+
+        function lucio() 
+        {
+             document.getElementById("result").innerHTML = lucioObj.lucio[0].name + "<br>" + lucioObj.lucio[1].weapon + "<br>"
+                                                        + lucioObj.lucio[2].skill1 + "<br>" + lucioObj.lucio[3].skill2 + "<br>" 
+                                                        + lucioObj.lucio[4].ultimate + "<br>";
+        }
+
+        function mercy() 
+        {
+            
+            document.getElementById("result").innerHTML = mercyObj.mercy[0].name + "<br>" + mercyObj.mercy[1].weapon + "<br>"
+                                                        + mercyObj.mercy[2].skill1 + "<br>" + mercyObj.mercy[3].skill2 + "<br>" 
+                                                        + mercyObj.mercy[4].ultimate + "<br>";
+        }
+
+        function symmetra() 
+        {
+            
+            document.getElementById("result").innerHTML = symObj.symmetra[0].name + "<br>" + symObj.symmetra[1].weapon + "<br>"
+                                                        + symObj.symmetra[2].skill1 + "<br>" + symObj.symmetra[3].skill2 + "<br>" 
+                                                        + symObj.symmetra[4].ultimate + "<br>";
+        }
+
+        function zenyatta() 
+        {
+            
+            document.getElementById("result").innerHTML = zenObj.zenyatta[0].name + "<br>" + zenObj.zenyatta[1].weapon + "<br>"
+                                                        + zenObj.zenyatta[2].skill1 + "<br>" + zenObj.zenyatta[3].skill2 + "<br>" 
+                                                        + zenObj.zenyatta[4].ultimate + "<br>";
+        }
+        </script>
+
+    </body>    
+
+    <head>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.2.18.min.js"></script>
+        <title>Support Info</title>
+        <meta charset="UTF-8">
+        </head>
+    <body id="bod">
+        <h1>Upload any images or fanart of these support heroes that you wish to contribute.</h1>
+        <p id="status"></p>
+        <div id="output"></div>
+        <input type="file" id="file-chooser" />
+        
+        <button id="upload-button" style="display:none">Upload to S3</button>
+        
+        <div id="results"></div>
+        
+        <div id="fb-root"></div>
+        <script>
+            var appId = '256130938159288';
+            
+            var roleArn = 'arn:aws:iam::111950665511:role/cistest';
+            
+            var bucketName = 'ahchoi';
+            
+            AWS.config.region = 'us-east-1';
+            // This is called with the results from from FB.getLoginStatus().
+            function statusChangeCallback(response) {
+                console.log('statusChangeCallback');
+                console.log(response);
+                // The response object is returned with a status field that lets the
+                // app know the current login status of the person.
+                // Full docs on the response object can be found in the documentation
+                // for FB.getLoginStatus().
+                if (response.status === 'connected') {
+                    // Logged into your app and Facebook.
+                    //testAPI();
+                    AWS.config.credentials = new AWS.WebIdentityCredentials({ //WIF
+                                                                            RoleArn: roleArn,
+                                                                            ProviderId: 'graph.facebook.com',
+                                                                            WebIdentityToken: response.authResponse.accessToken
+                                                                            });
+                    testQuery();//will write to output div after page loads
+                } else if (response.status === 'not_authorized') {
+                    // The person is logged into Facebook, but not your app.
+                    document.getElementById('status').innerHTML = 'Please log ' +
+                    'into this app.';
+                } else {
+                    // The person is not logged into Facebook, so we're not sure if
+                    // they are logged into this app or not.
+                    document.getElementById('status').innerHTML = 'Please log ' +
+                    'into Facebook.';
+                }
+            }
+
+            var bucket = new AWS.S3({
+                                    
+                                    params: {
+                                    
+                                    Bucket: bucketName
+                                    
+                                    }
+                                    
+                                    });
+                                    
+                                    var fileChooser = document.getElementById('file-chooser');
+                                    
+                                    var button = document.getElementById('upload-button');
+                                    
+                                    var results = document.getElementById('results');
+                                    
+                                    button.addEventListener('click', function () {
+                                                            
+                                                            var file = fileChooser.files[0];
+                                                            
+                                                            if (file) {
+                                                            
+                                                            results.innerHTML = '';
+                                                            
+                                                            //Object key will be facebook-USERID#/FILE_NAME
+                                                            
+                                                            var objKey = 'facebook-' + fbUserId + '/' + file.name;
+                                                            
+                                                            var params = {
+                                                            
+                                                            Key: objKey,
+                                                            
+                                                            ContentType: file.type,
+                                                            
+                                                            Body: file,
+                                                            
+                                                            ACL: 'public-read'
+                                                            
+                                                            };
+                                                            
+                                                            bucket.putObject(params, function (err, data) {
+                                                                             
+                                                                             if (err) {
+                                                                             
+                                                                             results.innerHTML = 'ERROR: ' + err;
+                                                                             
+                                                                             } else {
+                                                                             
+                                                                             listObjs();
+                                                                             
+                                                                             }
+                                                                             
+                                                                             });
+                                                            
+                                                            } else {
+                                                            
+                                                            results.innerHTML = 'Nothing to upload.';
+                                                            
+                                                            }
+                                                            
+                                                            }, false);
+                                                            
+                                                            function listObjs() {
+                                                                
+                                                                var prefix = 'facebook-' + fbUserId;
+                                                                
+                                                                bucket.listObjects({
+                                                                                   
+                                                                                   Prefix: prefix
+                                                                                   
+                                                                                   }, function (err, data) {
+                                                                                   
+                                                                                   if (err) {
+                                                                                   
+                                                                                   results.innerHTML = 'ERROR: ' + err;
+                                                                                   
+                                                                                   } else {
+                                                                                   
+                                                                                   var objKeys = "";
+                                                                                   
+                                                                                   data.Contents.forEach(function (obj) {
+                                                                                                         
+                                                                                                         objKeys += obj.Key + "<br>";
+                                                                                                         
+                                                                                                         });
+                                                                                   
+                                                                                   results.innerHTML = objKeys;
+                                                                                   
+                                                                                   }
+                                                                                   
+                                                                                   });
+                                                                                   
+                                                            }
+        
+        
+        // This function is called when someone finishes with the Login
+        // Button.  See the onlogin handler attached to it in the sample
+        // code below.
+        function checkLoginState() {
+            FB.getLoginStatus(function(response) {
+                              statusChangeCallback(response);
+                              });
+        }
+        
+        window.fbAsyncInit = function () {
+            
+            FB.init({
+                    
+                    appId: appId
+                    
+                    });
+                    
+                    FB.login(function (response) {
+                             
+                             bucket.config.credentials = new AWS.WebIdentityCredentials({
+                                                                                        
+                                                                                        ProviderId: 'graph.facebook.com',
+                                                                                        
+                                                                                        RoleArn: roleArn,
+                                                                                        
+                                                                                        WebIdentityToken: response.authResponse.accessToken
+                                                                                        
+                                                                                        });
+                             
+                             fbUserId = response.authResponse.userID;
+                             
+                             button.style.display = 'block';
+                             
+                             });
+                             
+        };
+        
+        // Load the Facebook SDK asynchronously
+        
+        (function (d, s, id) {
+         
+         var js, fjs = d.getElementsByTagName(s)[0];
+         
+         if (d.getElementById(id)) {
+         
+         return;
+         
+         }
+         
+         js = d.createElement(s);
+         
+         js.id = id;
+         
+         js.src = "//connect.facebook.net/en_US/all.js";
+         
+         fjs.parentNode.insertBefore(js, fjs);
+         
+         }(document, 'script', 'facebook-jssdk'));
+         
+            </script>
+    </body>
+    
+</html>
+
+   
